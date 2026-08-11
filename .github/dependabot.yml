@@ -33,3 +33,16 @@ updates:
     groups:
       actions-minor-patch:
         update-types: ["minor", "patch"]
+
+  # Base images in Dockerfile.ci -- node, golang and alpine. That is the only Dockerfile in the
+  # repo since the rotted upstream ones were removed, and its images are exactly what ships.
+  # Dependabot matches /dockerfile|containerfile/i, so the .ci suffix is picked up.
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 7
+    groups:
+      docker-minor-patch:
+        update-types: ["minor", "patch"]
