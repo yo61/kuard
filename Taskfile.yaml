@@ -1,0 +1,155 @@
+# https://taskfile.dev
+#
+# Replaces the upstream Makefile, which built an arch x fakever matrix and pushed it to
+# gcr.io/kuar-demo. Both of those jobs now belong to Dockerfile.ci and build-kuard.yml, so nothing
+# here reimplements them -- this covers the local workflow instead.
+#
+# The one genuinely non-obvious thing it encodes: pkg/sitedata/bindata.go is generated and
+# gitignored, so `go build` and `go test` do not work on a clean checkout until `task generate`
+# has run. Every Go task depends on it, so that stops being something you have to know.
+
+version: '3'
+
+set: [errexit, pipefail]
+
+vars:
+  BINDATA: pkg/sitedata/bindata.go
+  BUNDLE: sitedata/built/bundle.js
+  PKG: github.com/kubernetes-up-and-running/kuard
+  # blue/green/purple are the "fake versions" the book flips between for rollout demos.
+  FAKEVER: '{{.FAKEVER | default "blue"}}'
+  IMAGE: '{{.IMAGE | default "kuard:dev"}}'
+  PORT: '{{.PORT | default "8080"}}'
+
+tasks:
+  default:
+    desc: List available tasks
+    cmds:
+      - task --list
+    silent: true
+
+  tools:
+    desc: Install the go-bindata fork used for asset embedding
+    # The original jteeuwen/go-bindata was deleted from GitHub; this is the community fork
+    # Dockerfile.ci also uses. Checking GOPATH/bin rather than `command -v`, because `go install`
+    # puts it there whether or not that directory happens to be on your PATH.
+    status:
+      - test -x "$(go env GOPATH)/bin/go-bindata"
+    cmds:
+      - go install github.com/go-bindata/go-bindata/go-bindata@latest
+
+  generate:
+    desc: Embed sitedata into pkg/sitedata/bindata.go
+    deps: [tools]
+    sources:
+      - sitedata/**/*
+    generates:
+      - '{{.BINDATA}}'
+    # go:generate invokes go-bindata by name, so GOPATH/bin has to be on PATH for this command.
+    # CI gets that from actions/setup-go; a local shell often does not.
+    cmds:
+      - PATH="$(go env GOPATH)/bin:$PATH" go generate ./cmd/... ./pkg/...
+
+  client:install:
+    desc: Install client dependencies from the lockfile
+    sources:
+      - client/package.json
+      - client/package-lock.json
+    generates:
+      - client/node_modules/.package-lock.json
+    dir: client
+    cmds:
+      - npm ci --loglevel=error
+
+  client:build:
+    desc: Build the production React bundle
+    deps: [client:install]
+    sources:
+      - client/src/**/*
+      - client/webpack.config.js
+      - client/.babelrc
+    generates:
+      - '{{.BUNDLE}}'
+    dir: client
+    cmds:
+      - npm run build
+
+  test:go:
+    desc: Run the Go tests
+    deps: [generate]
+    cmds:
+      - go test ./...
+
+  test:client:
+    desc: Build the bundle and test it in jsdom
+    deps: [client:install]
+    dir: client
+    cmds:
+      - npm test
+
+  test:
+    desc: Run all tests
+    deps: [test:go, test:client]
+
+  vet:
+    desc: Run go vet
+    deps: [generate]
+    cmds:
+      - go vet ./...
+
+  lint:workflows:
+    desc: Lint and security-audit the GitHub Actions workflows
+    cmds:
+      - actionlint .github/workflows/*.yml
+      - zizmor .github/workflows/
+
+  build:
+    desc: Build the kuard binary into bin/
+    # Sequential rather than deps: the bundle has to exist before go-bindata embeds it, and deps
+    # run in parallel.
+    cmds:
+      - task: client:build
+      - task: generate
+      - go build -o bin/kuard -ldflags "-X {{.PKG}}/pkg/version.VERSION={{.FAKEVER}}" ./cmd/kuard
+
+  run:
+    desc: Build and run kuard locally (PORT=8080 FAKEVER=blue)
+    deps: [build]
+    cmds:
+      - ./bin/kuard --address=:{{.PORT}}
+
+  run:debug:
+    desc: Run kuard serving assets from disk, so `task client:watch` changes appear on reload
+    deps: [build]
+    cmds:
+      - ./bin/kuard --address=:{{.PORT}} --debug --debug-sitedata-dir ./sitedata
+
+  client:watch:
+    desc: Rebuild the bundle on change (pair with `task run:debug`)
+    deps: [client:install]
+    dir: client
+    cmds:
+      - npm run dev
+
+  client:serve:
+    desc: Run the webpack dev server on :8081, proxying to kuard on :8080
+    deps: [client:install]
+    dir: client
+    cmds:
+      - npm start
+
+  image:
+    desc: Build the container image the way CI does, single arch, no push
+    cmds:
+      - docker build -f Dockerfile.ci -t {{.IMAGE}} --build-arg FAKEVER={{.FAKEVER}} .
+
+  image:run:
+    desc: Build and run the container image
+    deps: [image]
+    cmds:
+      - docker run --rm -ti --name kuard --publish {{.PORT}}:8080 {{.IMAGE}}
+
+  clean:
+    desc: Remove build output and generated assets
+    cmds:
+      - rm -rf bin {{.BINDATA}} {{.BUNDLE}} client/node_modules

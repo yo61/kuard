@@ -1,8 +1,9 @@
 # syntax=docker/dockerfile:1
 #
-# Self-contained multi-arch CI build for ghcr.io/yo61/kuard. Ignores the Makefile (targets the
-# dead gcr.io/kuar-demo and needs docker-in-docker volumes). The upstream 2019 build has rotted;
-# this works around the one surviving breakage:
+# Self-contained multi-arch CI build for ghcr.io/yo61/kuard, and the only Dockerfile in the repo:
+# the upstream Makefile and the four Dockerfiles it drove targeted the dead gcr.io/kuar-demo via
+# docker-in-docker volumes and were removed. The upstream 2019 build has rotted; this works around
+# the one surviving breakage:
 #   - jteeuwen/go-bindata was deleted from GitHub, so the original `go get` of it fails.
 #     -> we install the community go-bindata/go-bindata fork (drop-in CLI) in the build stage.
 #
