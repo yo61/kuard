@@ -17,14 +17,13 @@
 # FAKEVER (blue/green/purple) is baked into the version string kuard shows in its UI -- that's
 # what the book's rollout demos flip between.
 
-# ---- Stage 1: React client (webpack 4) -> sitedata/built/bundle.js (built once, natively) ----
-FROM --platform=$BUILDPLATFORM node:20-alpine AS client
+# ---- Stage 1: React client (webpack 5) -> sitedata/built/bundle.js (built once, natively) ----
+# node 24 is the active LTS, and webpack-dev-server 6 requires >= 22.15.0 anyway.
+FROM --platform=$BUILDPLATFORM node:24-alpine AS client
 WORKDIR /src
 COPY client/ ./client/
 COPY sitedata/ ./sitedata/
-ENV NODE_OPTIONS=--openssl-legacy-provider
-# ^ webpack 4 uses a hash algorithm OpenSSL 3 rejects; Node 17+ ships OpenSSL 3, so this re-enables it.
-RUN cd client && npm install --loglevel=error && npm run build
+RUN cd client && npm ci --loglevel=error && npm run build
 
 # ---- Stage 2: embed assets + cross-compile kuard for the target arch (runs on $BUILDPLATFORM) ----
 FROM --platform=$BUILDPLATFORM golang:1.26-alpine AS build

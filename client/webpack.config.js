@@ -1,8 +1,6 @@
-var webpack = require('webpack');
 var path = require('path');
 
 var BUILD_DIR = path.resolve(__dirname, '../sitedata/built');
-var APP_DIR = path.resolve(__dirname, 'src');
 
 module.exports = {
   entry: './src/index.jsx',
@@ -16,24 +14,24 @@ module.exports = {
     ]
   },
   resolve: {
-    extensions: ['*', '.js', '.jsx']
+    extensions: ['.js', '.jsx']
   },
   output: {
     path: BUILD_DIR,
     publicPath: '/built/',
     filename: 'bundle.js'
   },
-  plugins: [
-    new webpack.HotModuleReplacementPlugin()
-  ],
   performance: { hints: false },
   devServer: {
-    inline: true,
     hot: true,
     port: 8081,
-    proxy: {
-      "**": "http://localhost:8080"
-    }
+    // Catch-all proxy to the kuard Go server. The dev server's own middleware serves /built/
+    // before the proxy runs, so the bundle stays local and everything else reaches the backend.
+    proxy: [
+      {
+        context: function () { return true; },
+        target: 'http://localhost:8080'
+      }
+    ]
   }
 };
-
