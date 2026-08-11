@@ -47,7 +47,10 @@ RUN --mount=type=cache,target=/go/pkg/mod \
     go build -o /kuard -ldflags "-X ${PKG}/pkg/version.VERSION=${FAKEVER}" ./cmd/kuard
 
 # ---- Stage 3: minimal runtime (built per target arch by buildx) ----
-FROM alpine
+# Pinned rather than bare `alpine`: this is the base of the published
+# ghcr.io/yo61/kuard image, and an unpinned tag both drifts silently between
+# builds and gives Dependabot's docker ecosystem no version to bump.
+FROM alpine:3.24
 USER nobody:nobody
 COPY --from=build /kuard /kuard
 CMD ["/kuard"]
