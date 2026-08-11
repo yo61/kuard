@@ -20,8 +20,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/kubernetes-up-and-running/kuard/pkg/apiutils"
 	"github.com/julienschmidt/httprouter"
+	"github.com/kubernetes-up-and-running/kuard/pkg/apiutils"
 )
 
 // ProbeStatus is returned from a GET to this API endpoing

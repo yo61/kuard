@@ -91,6 +91,24 @@ tasks:
     desc: Run all tests
     deps: [test:go, test:client]
 
+  fmt:
+    desc: Format the Go sources
+    # Tracked files only: go-bindata's output is not gofmt-clean and is gitignored, so
+    # `git ls-files` leaves it out without a skip list.
+    cmds:
+      - git ls-files -z '*.go' | xargs -0 gofmt -w
+
+  fmt:check:
+    desc: Fail if any tracked Go source needs formatting (what CI runs)
+    cmds:
+      - |
+        unformatted=$(git ls-files -z '*.go' | xargs -0 gofmt -l)
+        if [ -n "$unformatted" ]; then
+          echo "These files need gofmt:"
+          echo "$unformatted"
+          exit 1
+        fi
+
   vet:
     desc: Run go vet
     deps: [generate]
