@@ -44,6 +44,18 @@ jobs:
           go install github.com/go-bindata/go-bindata/go-bindata@latest
           go generate ./cmd/... ./pkg/...
 
+      # Scoped to tracked files rather than ./... : go-bindata's output is not gofmt-clean, and
+      # it is gitignored, so `git ls-files` excludes it without needing a skip list.
+      - name: gofmt
+        run: |
+          set -euo pipefail
+          unformatted=$(git ls-files -z '*.go' | xargs -0 gofmt -l)
+          if [ -n "$unformatted" ]; then
+            echo "These files need gofmt:"
+            echo "$unformatted"
+            exit 1
+          fi
+
       - name: go vet
         run: go vet ./...
 
