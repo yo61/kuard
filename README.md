@@ -18,7 +18,7 @@ publishes its own. See [FORK.md](FORK.md).
 ### Building
 
 Build logic lives in **`Dockerfile.ci`**: a multi-stage build that compiles the React client and
-the Go binary and emits a minimal Alpine image. `.github/workflows/build-kuard.yml` runs it to
+the Go binary and emits a minimal Alpine image. `.github/workflows/build-kuard.yaml` runs it to
 publish the images described in [FORK.md](FORK.md).
 
 Locally, [Task](https://taskfile.dev) wraps the workflow:
