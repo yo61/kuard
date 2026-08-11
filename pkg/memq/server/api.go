@@ -17,7 +17,7 @@ limitations under the License.
 package memqserver
 
 import (
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
@@ -80,7 +80,7 @@ func (s *Server) DrainQueue(w http.ResponseWriter, r *http.Request, p httprouter
 }
 
 func (s *Server) Enqueue(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	body, err := ioutil.ReadAll(r.Body)
+	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		w.WriteHeader(http.StatusInternalServerError)
