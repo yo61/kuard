@@ -42,7 +42,7 @@ jobs:
         with:
           context: .
           file: ./Dockerfile.ci
-          platforms: linux/amd64                    # your nodes are amd64 (the book image was kuard-amd64)
+          platforms: linux/amd64,linux/arm64,linux/arm/v7   # cloud/x86, 64-bit ARM (Graviton/Pi 4-5), 32-bit ARM (Pi 2-3)
           push: true
           build-args: |
             FAKEVER=${{ matrix.fakever }}

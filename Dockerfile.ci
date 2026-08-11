@@ -1,18 +1,24 @@
 # syntax=docker/dockerfile:1
 #
-# Self-contained CI build for ghcr.io/yo61/kuard. Ignores the Makefile (targets the dead
-# gcr.io/kuar-demo and needs docker-in-docker volumes). The upstream 2019 build has rotted;
+# Self-contained multi-arch CI build for ghcr.io/yo61/kuard. Ignores the Makefile (targets the
+# dead gcr.io/kuar-demo and needs docker-in-docker volumes). The upstream 2019 build has rotted;
 # this works around the one surviving breakage:
 #   - jteeuwen/go-bindata was deleted from GitHub, so the original `go get` of it fails.
 #     -> we install the community go-bindata/go-bindata fork (drop-in CLI) in the build stage.
 #
 # The 2019 Go deps compile on modern Go once golang.org/x/net is bumped (the old one used a
-# //go:linkname into syscall that Go 1.26 rejects); that bump is in go.mod, so no era-matched
-# Go stage is needed. FAKEVER (blue/green/purple) is baked into the version string kuard shows
-# in its UI -- that's what the book's rollout demos flip between.
+# //go:linkname into syscall that Go 1.26 rejects); that bump is in go.mod.
+#
+# Multi-arch strategy: the client (webpack) and Go stages are pinned to $BUILDPLATFORM so they
+# always run natively -- never under QEMU. The webpack bundle and go-bindata codegen are
+# arch-independent and happen once; only the final `go build` cross-compiles per target arch,
+# which Go does at native speed. Result: a 3-arch image with no emulation anywhere.
+#
+# FAKEVER (blue/green/purple) is baked into the version string kuard shows in its UI -- that's
+# what the book's rollout demos flip between.
 
-# ---- Stage 1: React client (webpack 4) -> sitedata/built/bundle.js ----
-FROM node:20-alpine AS client
+# ---- Stage 1: React client (webpack 4) -> sitedata/built/bundle.js (built once, natively) ----
+FROM --platform=$BUILDPLATFORM node:20-alpine AS client
 WORKDIR /src
 COPY client/ ./client/
 COPY sitedata/ ./sitedata/
@@ -20,11 +26,10 @@ ENV NODE_OPTIONS=--openssl-legacy-provider
 # ^ webpack 4 uses a hash algorithm OpenSSL 3 rejects; Node 17+ ships OpenSSL 3, so this re-enables it.
 RUN cd client && npm install --loglevel=error && npm run build
 
-# ---- Stage 2: compile kuard ----
-# Arch is driven by the build platform (buildx --platform in CI, native locally), so GOARCH is
-# not hardcoded -- that keeps the go-bindata build tool native instead of cross-compiling it off
-# $PATH, and lets the same Dockerfile produce whatever arch the workflow requests.
-FROM golang:1.26-alpine AS build
+# ---- Stage 2: embed assets + cross-compile kuard for the target arch (runs on $BUILDPLATFORM) ----
+FROM --platform=$BUILDPLATFORM golang:1.26-alpine AS build
+# TARGET* are supplied by buildx per requested platform; GOARM comes from the arm variant (v7 -> 7).
+ARG TARGETOS TARGETARCH TARGETVARIANT
 ENV CGO_ENABLED=0 \
     GOFLAGS=-mod=mod \
     PKG=github.com/kubernetes-up-and-running/kuard
@@ -32,12 +37,16 @@ ARG FAKEVER=blue
 WORKDIR /src
 COPY . .
 COPY --from=client /src/sitedata/built ./sitedata/built
-# install the go-bindata fork, run go:generate to embed sitedata/, then build with the version string
-RUN go install github.com/go-bindata/go-bindata/go-bindata@latest \
+# Shared cache mounts dedupe module downloads and build artifacts across the parallel arch builds.
+# go-bindata + go:generate run native (no GOARCH override); only `go build` targets the arch.
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    go install github.com/go-bindata/go-bindata/go-bindata@latest \
  && go generate ./cmd/... ./pkg/... \
- && go build -o /kuard -ldflags "-X ${PKG}/pkg/version.VERSION=${FAKEVER}" ./cmd/kuard
+ && GOOS=$TARGETOS GOARCH=$TARGETARCH GOARM=${TARGETVARIANT#v} \
+    go build -o /kuard -ldflags "-X ${PKG}/pkg/version.VERSION=${FAKEVER}" ./cmd/kuard
 
-# ---- Stage 3: minimal runtime ----
+# ---- Stage 3: minimal runtime (built per target arch by buildx) ----
 FROM alpine
 USER nobody:nobody
 COPY --from=build /kuard /kuard

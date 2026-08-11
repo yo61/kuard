@@ -39,6 +39,7 @@ import (
 	"github.com/felixge/httpsnoop"
 	"github.com/julienschmidt/httprouter"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func init() {
@@ -175,7 +176,7 @@ func NewApp() *App {
 		router.GET(prefix+"/", rootHandler)
 		router.GET(prefix+"/-/*path", rootHandler)
 
-		router.Handler("GET", prefix+"/metrics", prometheus.Handler())
+		router.Handler("GET", prefix+"/metrics", promhttp.Handler())
 
 		// Add the static files
 		sitedata.AddRoutes(router, prefix+"/built")
