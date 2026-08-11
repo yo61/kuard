@@ -1,11 +1,11 @@
 name: ci
 
-# Validates pull requests. build-kuard.yml only runs on push to main, so before this existed a PR
+# Validates pull requests. build-kuard.yaml only runs on push to main, so before this existed a PR
 # that broke the React build or the Go compile looked clean right up until it landed and took the
 # GHCR image build with it -- which is exactly how the client_golang 1.x bump (#5) slipped through
 # review: it removed prometheus.Handler(), and nothing compiled the code until it was on main.
 #
-# This never pushes to GHCR; publishing stays in build-kuard.yml. Hence contents:read only.
+# This never pushes to GHCR; publishing stays in build-kuard.yaml. Hence contents:read only.
 
 on:
   pull_request:
@@ -91,7 +91,7 @@ jobs:
           cd client
           npm test
 
-  # Builds the same image build-kuard.yml publishes, with push disabled: webpack bundle, go-bindata
+  # Builds the same image build-kuard.yaml publishes, with push disabled: webpack bundle, go-bindata
   # codegen and the Go compile all run exactly as they do for a release.
   image:
     name: image builds

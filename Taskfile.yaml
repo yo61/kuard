@@ -1,7 +1,7 @@
 # https://taskfile.dev
 #
 # Replaces the upstream Makefile, which built an arch x fakever matrix and pushed it to
-# gcr.io/kuar-demo. Both of those jobs now belong to Dockerfile.ci and build-kuard.yml, so nothing
+# gcr.io/kuar-demo. Both of those jobs now belong to Dockerfile.ci and build-kuard.yaml, so nothing
 # here reimplements them -- this covers the local workflow instead.
 #
 # The one genuinely non-obvious thing it encodes: pkg/sitedata/bindata.go is generated and
@@ -118,7 +118,7 @@ tasks:
   lint:workflows:
     desc: Lint and security-audit the GitHub Actions workflows
     cmds:
-      - actionlint .github/workflows/*.yml
+      - actionlint .github/workflows/*.y*ml
       - zizmor .github/workflows/
 
   build:

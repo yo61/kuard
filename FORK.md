@@ -20,7 +20,7 @@ and publishes it to **GitHub Container Registry** under `ghcr.io/yo61/kuard`.
 
 ## Images
 
-A GitHub Action (`.github/workflows/build-kuard.yml`) builds and pushes the three "fake versions" the book
+A GitHub Action (`.github/workflows/build-kuard.yaml`) builds and pushes the three "fake versions" the book
 uses for rollout demos:
 
 | Image | equivalent to the book's |
@@ -46,9 +46,9 @@ settings after the first push (Packages → kuard → Package settings → Chang
 
 ## Building
 
-- **`build-kuard.yml`** publishes: it runs on push to `main` and on manual dispatch (Actions → build-kuard →
+- **`build-kuard.yaml`** publishes: it runs on push to `main` and on manual dispatch (Actions → build-kuard →
   Run workflow), using the repo's built-in `GITHUB_TOKEN`, so there is no PAT or secret to configure.
-- **`ci.yml`** validates pull requests: it builds the same `Dockerfile.ci` image with pushing disabled, and
+- **`ci.yaml`** validates pull requests: it builds the same `Dockerfile.ci` image with pushing disabled, and
   runs `npm ci` to catch a `client/package-lock.json` that has drifted out of sync with `package.json`.
   It never authenticates to GHCR.
 - Build logic is in **`Dockerfile.ci`**, which is self-contained. The upstream `Makefile` built an
