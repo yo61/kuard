@@ -5,61 +5,64 @@
 ### Running
 
 ```
-kubectl run --restart=Never --image=gcr.io/kuar-demo/kuard-amd64:blue kuard
+kubectl run --restart=Never --image=ghcr.io/yo61/kuard:blue kuard
 kubectl port-forward kuard 8080:8080
 ```
 
 Open your browser to [http://localhost:8080](http://localhost:8080).
 
+The book and older tutorials say `gcr.io/kuar-demo/kuard-amd64:blue`. Those images are gone --
+Google shut down Container Registry and the project was never migrated -- which is why this fork
+publishes its own. See [FORK.md](FORK.md).
+
 ### Building
 
-We have ~3 ways to build.
-This has changed slightly from when the book is published so I'd view this as authoritative.
+Build logic lives in **`Dockerfile.ci`**: a multi-stage build that compiles the React client and
+the Go binary and emits a minimal Alpine image. `.github/workflows/build-kuard.yml` runs it to
+publish the images described in [FORK.md](FORK.md).
 
-#### Insert Binary
-
-This aligns with what is in the book.
-You need to build the binary to run *somehow* and then insert it into a Docker image.
-The easiest way to do this is to use the fully automated make system to build the binary and then create a Dockerfile for creating an image.
-
-Create the binary by typing `make` at the command line. This'll build a docker image and then run it to compile the binary.
-
-Now create a minimal Dockerfile to contain that binary:
+Locally, [Task](https://taskfile.dev) wraps the workflow:
 
 ```
-FROM alpine
-COPY bin/blue/amd64/kuard /kuard
-ENTRYPOINT [ "/kuard" ]
+task              # list every task
+task build        # bundle, embedded assets and binary into bin/
+task run          # build and run on :8080
+task test         # Go tests and the client bundle test
+task image        # build the container image the way CI does
 ```
 
-Overwrite `Dockerfile` with this and then run `docker build -t kuard-amd64:blue .`.
-Run with `docker run --rm -ti --name kuard --publish 8080:8080 kuard-amd64:blue`.
-
-To upload to a registry you'll have to tag it and push to your registry.  Refer to your registry documentation for details.
+Note that `pkg/sitedata/bindata.go` is generated and not committed, so `go build` and `go test` do
+not work on a fresh clone until `task generate` has run. Every Go task depends on it, so using
+Task means you do not have to remember that.
 
 #### Multi-stage Dockerfile
 
-A new feature of Docker, since the book was published, is a "multi-stage" build.
-This is a way to run build multiple images and then copy files between them.
+A feature of Docker added since the book was published is the "multi-stage" build: one image
+compiles the software, and a second, smaller one runs it.
 
-The `Dockerfile` at the root of this repo is an example of that.
-It creates one image to build kuard and then another image for running kuard.
-
-You can easily build an image with `docker build -t kuard-amd64:blue .`.
-Run with `docker run --rm -ti --name kuard --publish 8080:8080 kuard-amd64:blue`.
-
-To upload to a registry you'll have to tag it and push to your registry.  Refer to your registry documentation for details.
-
-#### Fancy Makefile for automated build and push
-
-This will build and push container images to a registry.
-This builds a set of images with "fake versions" (see below) to be able to play with upgrades.
+`Dockerfile.ci` is an example. It builds the React client in a `node` stage and the Go binary in a
+`golang` stage, then copies only the resulting binary into a bare `alpine` image.
 
 ```
-make all-push REGISTRY=<my-gcr-registry>
+docker build -f Dockerfile.ci -t kuard:blue .
+docker run --rm -ti --name kuard --publish 8080:8080 kuard:blue
 ```
 
-If you are having trouble, try issuing a `make clean` to reset stuff.
+`task image` and `task image:run` do the same thing.
+
+#### Inserting a prebuilt binary
+
+Closer to what the book describes: build the binary outside Docker and insert it. `task build`
+puts one in `bin/kuard`, so a minimal image is just:
+
+```
+FROM alpine
+COPY bin/kuard /kuard
+ENTRYPOINT [ "/kuard" ]
+```
+
+To upload to a registry you will have to tag it and push. Refer to your registry's documentation
+for details.
 
 ### KeyGen Workload
 

@@ -51,8 +51,10 @@ settings after the first push (Packages → kuard → Package settings → Chang
 - **`ci.yml`** validates pull requests: it builds the same `Dockerfile.ci` image with pushing disabled, and
   runs `npm ci` to catch a `client/package-lock.json` that has drifted out of sync with `package.json`.
   It never authenticates to GHCR.
-- Build logic is in **`Dockerfile.ci`** (self-contained; the upstream `Makefile` targets the dead `gcr.io`
-  and needs docker-in-docker, so it's ignored).
+- Build logic is in **`Dockerfile.ci`**, which is self-contained. The upstream `Makefile` built an
+  arch x fakever matrix and pushed it to the dead `gcr.io/kuar-demo` via docker-in-docker; both of
+  those jobs now belong to `Dockerfile.ci` and the workflow, so it and the four Dockerfiles it drove
+  were removed. `Taskfile.yaml` covers the local workflow instead (`task --list`).
 - The upstream 2019 build has bit-rotted; `Dockerfile.ci` works around it: the deleted `jteeuwen/go-bindata`
   dependency is swapped for the `go-bindata/go-bindata` community fork, and `golang.org/x/net` is bumped so
   the code links on current Go (the 2019 version used a `//go:linkname` into `syscall` that Go 1.26 rejects).
