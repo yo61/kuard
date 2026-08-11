@@ -86,7 +86,3 @@ export default class Dns extends React.Component {
     )
   }
 }
-
-Dns.propTypes =  {
-  serverPath: React.PropTypes.string.isRequired,
-}

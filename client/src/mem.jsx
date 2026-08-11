@@ -1,8 +1,11 @@
 import React from 'react';
 import numeral from 'numeral';
 import fetchError from './fetcherror';
+import ConnErrorContext from './connerror';
 
 export default class Mem extends React.Component {
+  static contextType = ConnErrorContext;
+
   constructor(props) {
     super(props);
     this.state = {
@@ -92,11 +95,3 @@ export default class Mem extends React.Component {
     )
   }
 }
-
-Mem.propTypes =  {
-  apiPath: React.PropTypes.string.isRequired,
-}
-
-Mem.contextTypes = {
-  reportConnError: React.PropTypes.func
-};

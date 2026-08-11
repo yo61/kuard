@@ -1,6 +1,7 @@
 import React from 'react';
 import fetchError from './fetcherror';
 import Markdown from './markdown'
+import ConnErrorContext from './connerror';
 
 const apiMD = ` This shows the status of a simple in memory queue.  This is
 based heavily on https://github.com/kelseyhightower/memq.
@@ -19,6 +20,8 @@ See \`pkg/memq/types.go\` for the data structures returned.
 `
 
 export default class MemQ extends React.Component {
+  static contextType = ConnErrorContext;
+
   constructor(props) {
     super(props);
     this.state = {
@@ -98,11 +101,3 @@ export default class MemQ extends React.Component {
     )
   }
 }
-
-MemQ.propTypes =  {
-  serverPath: React.PropTypes.string.isRequired
-}
-
-MemQ.contextTypes = {
-  reportConnError: React.PropTypes.func
-};

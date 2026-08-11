@@ -1,7 +1,10 @@
 import React from 'react';
 import fetchError from './fetcherror';
+import ConnErrorContext from './connerror';
 
 export default class Probe extends React.Component {
+  static contextType = ConnErrorContext;
+
   constructor(props) {
     super(props);
     this.state = {
@@ -101,12 +104,3 @@ export default class Probe extends React.Component {
     )
   }
 }
-
-Probe.propTypes =  {
-  serverPath: React.PropTypes.string.isRequired
-}
-
-Probe.contextTypes = {
-  reportConnError: React.PropTypes.func
-};
-

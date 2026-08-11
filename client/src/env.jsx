@@ -57,7 +57,3 @@ export default class Env extends React.Component {
     )
   }
 }
-
-Env.propTypes =  {
-  apiPath: React.PropTypes.string.isRequired,
-}
