@@ -23,12 +23,35 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Dockerfile.ci installs with `npm install`, which silently rewrites a lockfile that disagrees
-  # with package.json. `npm ci` fails instead, so this is the job that catches a lockfile which was
-  # hand-edited or regenerated against the wrong base -- the usual damage from resolving a
-  # Dependabot conflict by hand.
-  client-lockfile:
-    name: client lockfile is in sync
+  go:
+    name: go tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e  # v7.0.0
+        with:
+          go-version-file: go.mod
+
+      # pkg/sitedata/bindata.go is generated and gitignored, so `go test ./...` does not compile on
+      # a clean checkout until this has run. Same community fork Dockerfile.ci uses, since the
+      # original jteeuwen/go-bindata was deleted from GitHub.
+      - name: Generate embedded assets
+        run: |
+          set -euo pipefail
+          go install github.com/go-bindata/go-bindata/go-bindata@latest
+          go generate ./cmd/... ./pkg/...
+
+      - name: go vet
+        run: go vet ./...
+
+      - name: go test
+        run: go test ./...
+
+  client:
+    name: client tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
@@ -39,11 +62,22 @@ jobs:
         with:
           node-version: 24            # matches the node:24-alpine stage in Dockerfile.ci
 
+      # `npm ci` also fails when package.json and package-lock.json disagree, which the
+      # `npm install` in Dockerfile.ci would silently paper over -- the usual damage from
+      # hand-resolving a Dependabot lockfile conflict.
       - name: npm ci
         run: |
           set -euo pipefail
           cd client
           npm ci --loglevel=error
+
+      # `npm test` builds the production bundle first and asserts against the emitted output, not
+      # the source. That is the only way to catch a bundle that compiles but fails to mount.
+      - name: npm test
+        run: |
+          set -euo pipefail
+          cd client
+          npm test
 
   # Builds the same image build-kuard.yml publishes, with push disabled: webpack bundle, go-bindata
   # codegen and the Go compile all run exactly as they do for a release.
