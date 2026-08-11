@@ -1,0 +1,35 @@
+version: 2
+updates:
+  # Go modules.
+  - package-ecosystem: "gomod"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 7
+    groups:
+      gomod-minor-patch:
+        update-types: ["minor", "patch"]
+
+  # Node dependencies.
+  - package-ecosystem: "npm"
+    directory: "/client"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 7
+    groups:
+      client-minor-patch:
+        update-types: ["minor", "patch"]
+
+  # GitHub Actions. Pins are SHAs with version comments; Dependabot
+  # rewrites both. Majors stay outside the group so they arrive singly.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 7
+    groups:
+      actions-minor-patch:
+        update-types: ["minor", "patch"]
