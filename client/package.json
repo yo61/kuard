@@ -6,7 +6,8 @@
   "scripts": {
     "start": "webpack serve --mode development",
     "dev": "webpack --watch --mode development",
-    "build": "webpack --mode=production"
+    "build": "webpack --mode=production",
+    "test": "npm run build && vitest run"
   },
   "author": "",
   "private": true,
@@ -26,6 +27,8 @@
     "@babel/preset-env": "^8.0.2",
     "@babel/preset-react": "^8.0.1",
     "babel-loader": "^10.1.1",
+    "jsdom": "^30.0.1",
+    "vitest": "^4.1.10",
     "webpack": "^5.109.2",
     "webpack-cli": "^7.2.2",
     "webpack-dev-server": "^6.0.0"

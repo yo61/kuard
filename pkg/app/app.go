@@ -134,8 +134,14 @@ func fileExists(name string) bool {
 	return true
 }
 
+// Handler returns the fully wired handler chain that Run serves. Split out so tests can drive
+// the real routes through httptest rather than binding a port.
+func (k *App) Handler() http.Handler {
+	return promMiddleware(loggingMiddleware(k.r))
+}
+
 func (k *App) Run() {
-	r := promMiddleware(loggingMiddleware(k.r))
+	r := k.Handler()
 
 	// Look to see if we can find TLS certs
 	certFile := filepath.Join(k.c.TLSDir, "kuard.crt")
