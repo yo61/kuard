@@ -16,7 +16,7 @@ limitations under the License.
 package sitedata
 
 import (
-	"io/ioutil"
+	"fmt"
 	"net/http"
 	"os"
 	"path"
@@ -25,7 +25,6 @@ import (
 
 	assetfs "github.com/elazarl/go-bindata-assetfs"
 	"github.com/julienschmidt/httprouter"
-	"github.com/pkg/errors"
 )
 
 var debug bool
@@ -65,27 +64,27 @@ func LoadFilesInDir(dir string) (map[string]string, error) {
 	dirData := map[string]string{}
 	if debug {
 		fullDir := filepath.Join(debugRootDir, dir)
-		files, err := ioutil.ReadDir(fullDir)
+		files, err := os.ReadDir(fullDir)
 		if err != nil {
-			return dirData, errors.Wrapf(err, "Error reading dir %v", debugRootDir)
+			return dirData, fmt.Errorf("reading dir %v: %w", debugRootDir, err)
 		}
 		for _, file := range files {
-			data, err := ioutil.ReadFile(filepath.Join(fullDir, file.Name()))
+			data, err := os.ReadFile(filepath.Join(fullDir, file.Name()))
 			if err != nil {
-				return dirData, errors.Wrapf(err, "Error loading %v", file.Name())
+				return dirData, fmt.Errorf("loading %v: %w", file.Name(), err)
 			}
 			dirData[file.Name()] = string(data)
 		}
 	} else {
 		files, err := AssetDir(dir)
 		if err != nil {
-			return dirData, errors.Wrapf(err, "Could not load bindata dir %v", dir)
+			return dirData, fmt.Errorf("loading bindata dir %v: %w", dir, err)
 		}
 		for _, file := range files {
 			fullName := path.Join("templates", file)
 			data, err := Asset(fullName)
 			if err != nil {
-				return dirData, errors.Wrapf(err, "Error loading bindata %v", fullName)
+				return dirData, fmt.Errorf("loading bindata %v: %w", fullName, err)
 			}
 			dirData[file] = string(data)
 		}

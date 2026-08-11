@@ -8,7 +8,6 @@ require (
 	github.com/felixge/httpsnoop v1.1.0
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/miekg/dns v1.1.72
-	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.24.1
 	github.com/spf13/pflag v1.0.10
 	github.com/spf13/viper v1.21.0
