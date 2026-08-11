@@ -1,38 +1,36 @@
 import React from 'react';
+import cx from 'classnames';
+import {BrowserRouter, NavLink, Route, Routes} from 'react-router-dom';
 import Env from './env';
 import Mem from './mem';
 import Probe from './probe';
 import Dns from './dns';
 import KeyGen from './keygen';
 import Request from './request';
-import HighlightLink from './highlightlink'
 import Disconnected from './disconnected'
 import MemQ from './memq'
-import { Location, Locations } from 'react-router-component';
+import ConnErrorContext from './connerror'
 
-function createElement(Component, props) {
-  console.log(props)
-  return <Component {...props}/>
+// `end` keeps the match exact, so "/" does not stay highlighted on every other page.
+function NavItem({to, children}) {
+  return (
+    <NavLink to={to} end className={({isActive}) => cx("nav-item", {active: isActive})}>
+      {children}
+    </NavLink>
+  );
 }
 
 export default class App extends React.Component {
-  getChildContext() {
-    return {
+  constructor(props) {
+    super(props);
+    // Built once rather than per render: a fresh object each time would re-render every consumer.
+    this.connError = {
       reportConnError: () => {
         if (this.disconnected) {
           this.disconnected.reportConnError()
         }
       }
-    }
-  }
-
-  handleNavigation() {
-    this.forceUpdate()
-  }
-
-  reportConnError() {
-      this.disconnected.
-      this.timer = setInterval(this.loadState.bind(this), 1000);
+    };
   }
 
   render () {
@@ -41,7 +39,9 @@ export default class App extends React.Component {
       addrs.push(<span key={a}>{a}</span>, " ")
     }
 
-    let base = this.props.page.urlBase;
+    // kuard serves the same app under "", /a, /b and /c; basename makes every route and link
+    // relative to whichever one this page was served from. "" is not a valid basename.
+    let base = this.props.page.urlBase || "/";
 
     return (
       <div className="top">
@@ -56,37 +56,39 @@ export default class App extends React.Component {
           <div>Serving on {addrs}</div>
         </div>
 
-        <div className="nav-container">
-          <div className="nav">
-            <HighlightLink href={base+"/"} className="nav-item">Request Details</HighlightLink>
-            <HighlightLink href={base+"/-/env"} className="nav-item">Server Env</HighlightLink>
-            <HighlightLink href={base+"/-/mem"} className="nav-item">Memory</HighlightLink>
-            <HighlightLink href={base+"/-/liveness"} className="nav-item">Liveness Probe</HighlightLink>
-            <HighlightLink href={base+"/-/readiness"} className="nav-item">Readiness Probe</HighlightLink>
-            <HighlightLink href={base+"/-/dns"} className="nav-item">DNS Query</HighlightLink>
-            <HighlightLink href={base+"/-/keygen"} className="nav-item">KeyGen Workload</HighlightLink>
-            <HighlightLink href={base+"/-/memq"} className="nav-item">MemQ Server</HighlightLink>
-            <a className="nav-item" href={base+"/fs/"}>File system browser</a>
-          </div>
-          <div className="content">
-            <Locations onNavigation={this.handleNavigation.bind(this)}>
-              <Location path={base+"/"} handler={Request} page={this.props.page}/>
-              <Location path={base+"/-/env"} apiPath={base+"/env/api"} handler={Env}/>
-              <Location path={base+"/-/mem"} apiPath={base+"/mem/api"} handler={Mem}/>
-              <Location path={base+"/-/liveness"} serverPath={base+"/healthy"} handler={Probe}/>
-              <Location path={base+"/-/readiness"} serverPath={base+"/ready"} handler={Probe}/>
-              <Location path={base+"/-/dns"} serverPath={base+"/dns"} handler={Dns}/>
-              <Location path={base+"/-/keygen"} serverPath={base+"/keygen"} handler={KeyGen}/>
-              <Location path={base+"/-/memq"} serverPath={base+"/memq"} handler={MemQ}/>
-            </Locations>
-          </div>
-        </div>
+        <ConnErrorContext.Provider value={this.connError}>
+          <BrowserRouter basename={base}>
+            <div className="nav-container">
+              <div className="nav">
+                <NavItem to="/">Request Details</NavItem>
+                <NavItem to="/-/env">Server Env</NavItem>
+                <NavItem to="/-/mem">Memory</NavItem>
+                <NavItem to="/-/liveness">Liveness Probe</NavItem>
+                <NavItem to="/-/readiness">Readiness Probe</NavItem>
+                <NavItem to="/-/dns">DNS Query</NavItem>
+                <NavItem to="/-/keygen">KeyGen Workload</NavItem>
+                <NavItem to="/-/memq">MemQ Server</NavItem>
+                {/* Served by Go, not React -- must be a real navigation, not a client-side route. */}
+                <a className="nav-item" href={this.props.page.urlBase+"/fs/"}>File system browser</a>
+              </div>
+              <div className="content">
+                <Routes>
+                  <Route path="/" element={<Request page={this.props.page}/>}/>
+                  <Route path="/-/env" element={<Env apiPath={this.props.page.urlBase+"/env/api"}/>}/>
+                  <Route path="/-/mem" element={<Mem apiPath={this.props.page.urlBase+"/mem/api"}/>}/>
+                  {/* Distinct keys: both routes render Probe, so without them React would reuse the
+                      instance and carry one probe's polled history onto the other's page. */}
+                  <Route path="/-/liveness" element={<Probe key="liveness" serverPath={this.props.page.urlBase+"/healthy"}/>}/>
+                  <Route path="/-/readiness" element={<Probe key="readiness" serverPath={this.props.page.urlBase+"/ready"}/>}/>
+                  <Route path="/-/dns" element={<Dns serverPath={this.props.page.urlBase+"/dns"}/>}/>
+                  <Route path="/-/keygen" element={<KeyGen serverPath={this.props.page.urlBase+"/keygen"}/>}/>
+                  <Route path="/-/memq" element={<MemQ serverPath={this.props.page.urlBase+"/memq"}/>}/>
+                </Routes>
+              </div>
+            </div>
+          </BrowserRouter>
+        </ConnErrorContext.Provider>
       </div>
     )
   }
 }
-
-App.childContextTypes = {
-  reportConnError: React.PropTypes.func
-}
-

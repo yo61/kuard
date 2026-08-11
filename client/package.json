@@ -11,13 +11,15 @@
   "author": "",
   "private": true,
   "dependencies": {
-    "classnames": "^2.2.6",
-    "marked": "^0.3.19",
+    "@rjsf/core": "^6.7.1",
+    "@rjsf/utils": "^6.7.1",
+    "@rjsf/validator-ajv8": "^6.7.1",
+    "classnames": "^2.5.1",
+    "marked": "^18.0.9",
     "numeral": "^2.0.6",
-    "react": "^15.4.2",
-    "react-dom": "^15.4.2",
-    "react-jsonschema-form": "^0.42.0",
-    "react-router-component": "^0.36.4"
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "react-router-dom": "^7.18.2"
   },
   "devDependencies": {
     "@babel/core": "^8.0.1",

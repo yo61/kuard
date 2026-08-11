@@ -1,9 +1,12 @@
 import React from 'react';
-import Form from "react-jsonschema-form";
+import Form from "@rjsf/core";
+import validator from "@rjsf/validator-ajv8";
 import fetchError from './fetcherror';
+import ConnErrorContext from './connerror';
 
+// No $schema key: this only uses type/properties/title, valid under any draft, and the old
+// draft-04 declaration is not something Ajv 8 (behind @rjsf/validator-ajv8) accepts.
 const schema = {
-  "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
   "properties": {
     "enable": {
@@ -37,13 +40,9 @@ const schema = {
   }
 };
 
-const uiSchema = {
-  enable: {
-    classNames: "foo"
-  }
-}
-
 export default class KeyGen extends React.Component {
+  static contextType = ConnErrorContext;
+
   constructor(props) {
     super(props);
     this.state = {
@@ -132,7 +131,7 @@ export default class KeyGen extends React.Component {
             </div>
             <Form
               schema={schema}
-              uiSchema={uiSchema}
+              validator={validator}
               className="form"
               formData={this.state.config}
               onChange={this.handleChange}
@@ -149,11 +148,3 @@ export default class KeyGen extends React.Component {
     )
   }
 }
-
-KeyGen.propTypes =  {
-  serverPath: React.PropTypes.string.isRequired,
-}
-
-KeyGen.contextTypes = {
-  reportConnError: React.PropTypes.func
-};
