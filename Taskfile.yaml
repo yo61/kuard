@@ -9,6 +9,7 @@
 # has run. Every Go task depends on it, so that stops being something you have to know.
 
 version: '3'
+silent: true
 
 set: [errexit, pipefail]
 
@@ -26,7 +27,6 @@ tasks:
     desc: List available tasks
     cmds:
       - task --list-all
-    silent: true
 
   tools:
     desc: Install the go-bindata fork used for asset embedding
