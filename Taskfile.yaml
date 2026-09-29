@@ -30,6 +30,11 @@ tasks:
 
   tools:
     desc: Install the go-bindata fork used for asset embedding
+    summary: >-
+      Installs the go-bindata fork used for asset embedding. The original jteeuwen/go-bindata was
+      deleted from GitHub, so this is the community fork — the same one Dockerfile.ci uses. The
+      guard checks GOPATH/bin rather than using `command -v`, because `go install` puts the binary
+      there whether or not that directory is on your PATH.
     # The original jteeuwen/go-bindata was deleted from GitHub; this is the community fork
     # Dockerfile.ci also uses. Checking GOPATH/bin rather than `command -v`, because `go install`
     # puts it there whether or not that directory happens to be on your PATH.
@@ -40,6 +45,11 @@ tasks:
 
   generate:
     desc: Embed sitedata into pkg/sitedata/bindata.go
+    summary: >-
+      Embeds sitedata into pkg/sitedata/bindata.go via go:generate. It prepends GOPATH/bin to PATH
+      for the command, because go:generate invokes go-bindata by name: CI gets that directory on
+      PATH from actions/setup-go, a local shell often does not. Fingerprinted on sitedata/**/*, so
+      it re-runs only when the assets change.
     deps: [tools]
     sources:
       - sitedata/**/*
@@ -52,6 +62,10 @@ tasks:
 
   client:install:
     desc: Install client dependencies from the lockfile
+    summary: >-
+      npm ci from the lockfile, so the installed tree matches package-lock.json exactly rather
+      than re-resolving. Fingerprinted on the two manifests, so repeated runs are skipped.
+      Everything under client/ depends on this, and the other client tasks pull it in themselves.
     sources:
       - client/package.json
       - client/package-lock.json
@@ -63,6 +77,10 @@ tasks:
 
   client:build:
     desc: Build the production React bundle
+    summary: >-
+      Builds the production React bundle with webpack. Fingerprinted on client/src, the webpack
+      config and .babelrc, so it re-runs when any of those change. `build` runs this before
+      `generate`, because the bundle has to exist on disk before go-bindata can embed it.
     deps: [client:install]
     sources:
       - client/src/**/*
@@ -76,12 +94,19 @@ tasks:
 
   test:go:
     desc: Run the Go tests
+    summary: >-
+      The Go tests, with `generate` first so the embedded assets exist — without that the package
+      would not compile. Plain `go test ./...`: no -race and no -count=1, so results can come from
+      the test cache.
     deps: [generate]
     cmds:
       - go test ./...
 
   test:client:
     desc: Build the bundle and test it in jsdom
+    summary: >-
+      Builds the bundle and runs the client tests under jsdom, so the DOM is simulated rather than
+      real — a browser-only problem will not surface here.
     deps: [client:install]
     dir: client
     cmds:
@@ -89,10 +114,18 @@ tasks:
 
   test:
     desc: Run all tests
+    summary: >-
+      Both suites, Go and client. They are declared as deps so Task may run them concurrently,
+      which means their output interleaves; run them separately if you need to read one cleanly.
     deps: [test:go, test:client]
 
   fmt:
     desc: Format the Go sources
+    summary: >-
+      gofmt -w over tracked .go files only, selected with `git ls-files`. That is deliberate:
+      go-bindata's generated output is not gofmt-clean and is gitignored, so listing tracked files
+      excludes it without maintaining a skip list. It rewrites in place; fmt:check is the
+      reporting form.
     # Tracked files only: go-bindata's output is not gofmt-clean and is gitignored, so
     # `git ls-files` leaves it out without a skip list.
     cmds:
@@ -100,6 +133,10 @@ tasks:
 
   fmt:check:
     desc: Fail if any tracked Go source needs formatting (what CI runs)
+    summary: >-
+      Fails if any tracked Go source needs formatting, without rewriting — the form CI runs, so
+      this is the one to check before pushing. Same tracked-files-only scope as fmt, for the same
+      reason: the generated bindata is not gofmt-clean.
     cmds:
       - |
         unformatted=$(git ls-files -z '*.go' | xargs -0 gofmt -l)
@@ -111,18 +148,31 @@ tasks:
 
   vet:
     desc: Run go vet
+    summary: >-
+      go vet over the module, with `generate` first so the embedded assets exist and the packages
+      compile. Correctness checks only — there is no golangci-lint here.
     deps: [generate]
     cmds:
       - go vet ./...
 
   lint:workflows:
     desc: Lint and security-audit the GitHub Actions workflows
+    summary: >-
+      Runs actionlint over the workflow files, then zizmor for the security audit. Nothing else
+      runs these: neither ci.yaml nor build-kuard.yaml invokes either tool, and this repo has no
+      pre-commit config — so a workflow mistake goes uncaught until the workflow next runs.
+      Worth running by hand after touching anything under .github/workflows.
     cmds:
       - actionlint .github/workflows/*.y*ml
       - zizmor .github/workflows/
 
   build:
     desc: Build the kuard binary into bin/
+    summary: >-
+      Builds bin/kuard with the fake version stamped in. The three steps run sequentially rather
+      than as deps, on purpose: the React bundle has to exist before go-bindata embeds it, and
+      deps would run in parallel. FAKEVER picks which of the book's blue/green/purple demo
+      versions the binary reports.
     # Sequential rather than deps: the bundle has to exist before go-bindata embeds it, and deps
     # run in parallel.
     cmds:
@@ -132,18 +182,28 @@ tasks:
 
   run:
     desc: Build and run kuard locally (PORT=8080 FAKEVER=blue)
+    summary: >-
+      Builds and runs kuard on PORT (8080 by default), serving the embedded assets. Changes to
+      client/ will not appear until you rebuild — run:debug is the one that serves from disk.
     deps: [build]
     cmds:
       - ./bin/kuard --address=:{{.PORT}}
 
   run:debug:
     desc: Run kuard serving assets from disk, so `task client:watch` changes appear on reload
+    summary: >-
+      Runs kuard with --debug and --debug-sitedata-dir ./sitedata, so assets come from disk
+      instead of the embedded bundle. Pair it with client:watch in another shell: the watcher
+      rebuilds and a reload picks the change up, with no Go rebuild in between.
     deps: [build]
     cmds:
       - ./bin/kuard --address=:{{.PORT}} --debug --debug-sitedata-dir ./sitedata
 
   client:watch:
     desc: Rebuild the bundle on change (pair with `task run:debug`)
+    summary: >-
+      Rebuilds the bundle on every change. Pointless on its own — pair it with run:debug, which
+      serves assets from disk so the rebuilt bundle is what you reload.
     deps: [client:install]
     dir: client
     cmds:
@@ -151,6 +211,10 @@ tasks:
 
   client:serve:
     desc: Run the webpack dev server on :8081, proxying to kuard on :8080
+    summary: >-
+      Runs the webpack dev server on :8081, proxying API calls through to a kuard already running
+      on :8080. The alternative to run:debug + client:watch: hot module reload rather than a
+      manual refresh, but it needs kuard up separately.
     deps: [client:install]
     dir: client
     cmds:
@@ -158,16 +222,27 @@ tasks:
 
   image:
     desc: Build the container image the way CI does, single arch, no push
+    summary: >-
+      Builds the container image from Dockerfile.ci the way CI does — single architecture, no push
+      — so a local image build reproduces CI's rather than approximating it. FAKEVER is passed
+      through as a build arg.
     cmds:
       - docker build -f Dockerfile.ci -t {{.IMAGE}} --build-arg FAKEVER={{.FAKEVER}} .
 
   image:run:
     desc: Build and run the container image
+    summary: >-
+      Builds the image and runs it interactively, publishing PORT to the container's 8080 and
+      removing the container on exit. Named `kuard`, so a previous run still up will collide.
     deps: [image]
     cmds:
       - docker run --rm -ti --name kuard --publish {{.PORT}}:8080 {{.IMAGE}}
 
   clean:
     desc: Remove build output and generated assets
+    summary: >-
+      Removes bin/, the generated bindata, the built bundle and client/node_modules. Dropping
+      node_modules means the next client task pays a full `npm ci` — a deliberate reset rather
+      than a quick tidy.
     cmds:
       - rm -rf bin {{.BINDATA}} {{.BUNDLE}} client/node_modules
