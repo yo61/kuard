@@ -41,7 +41,7 @@ tasks:
     status:
       - test -x "$(go env GOPATH)/bin/go-bindata"
     cmds:
-      - go install github.com/go-bindata/go-bindata/go-bindata@latest
+      - go install github.com/go-bindata/go-bindata/v3/go-bindata@v3.1.3
 
   generate:
     desc: Embed sitedata into pkg/sitedata/bindata.go

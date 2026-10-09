@@ -25,7 +25,7 @@ concurrency:
 jobs:
   go:
     name: go tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
@@ -41,7 +41,7 @@ jobs:
       - name: Generate embedded assets
         run: |
           set -euo pipefail
-          go install github.com/go-bindata/go-bindata/go-bindata@latest
+          go install github.com/go-bindata/go-bindata/v3/go-bindata@v3.1.3
           go generate ./cmd/... ./pkg/...
 
       # Scoped to tracked files rather than ./... : go-bindata's output is not gofmt-clean, and
@@ -64,15 +64,19 @@ jobs:
 
   client:
     name: client tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
           persist-credentials: false
 
+      # Renovate moves this with the node image in Dockerfile.ci, as one group.
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020  # v7.0.0
+        env:
+          # renovate: datasource=node-version depName=node
+          NODE_VERSION: 24.21.0
         with:
-          node-version: 24            # matches the node:24-alpine stage in Dockerfile.ci
+          node-version: ${{ env.NODE_VERSION }}
 
       # `npm ci` also fails when package.json and package-lock.json disagree, which the
       # `npm install` in Dockerfile.ci would silently paper over -- the usual damage from
@@ -95,7 +99,7 @@ jobs:
   # codegen and the Go compile all run exactly as they do for a release.
   image:
     name: image builds
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
