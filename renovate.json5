@@ -1,0 +1,93 @@
+{
+  $schema: "https://docs.renovatebot.com/renovate-schema.json",
+
+  // Two bots update this repository, each owning different pins. Dependabot keeps npm and the
+  // action SHAs (.github/dependabot.yml). Renovate owns go.mod whole, Dockerfile.ci's base
+  // images, the runner image, CI's Node version and go-bindata. enabledManagers keeps it off
+  // everything Dependabot owns; github-actions runs only for runner images. Renovate runs from
+  // yo61/infrastructure's workflow, whose cron is the only schedule; do not add a `schedule`.
+  extends: ["config:recommended", "customManagers:githubActionsVersions"],
+  enabledManagers: ["gomod", "dockerfile", "github-actions", "custom.regex"],
+
+  // Policy shared by every repository Renovate updates; keep the copies alike.
+  semanticCommits: "enabled",
+  dependencyDashboard: true,
+  minimumReleaseAge: "7 days",
+  minimumReleaseAgeBehaviour: "timestamp-optional",
+  prHourlyLimit: 0,
+  prConcurrentLimit: 10,
+  osvVulnerabilityAlerts: true,
+  vulnerabilityAlerts: {
+    semanticCommitType: "fix",
+    labels: ["security"],
+  },
+
+  postUpdateOptions: ["gomodTidy"],
+
+  packageRules: [
+    {
+      matchUpdateTypes: ["major"],
+      minimumReleaseAge: "14 days",
+    },
+    {
+      // Action SHAs are Dependabot's; only runs-on images are Renovate's.
+      matchManagers: ["github-actions"],
+      matchDatasources: ["!github-runners"],
+      enabled: false,
+    },
+    {
+      // The published image's base images, pinned by digest so a moved tag is a pull request.
+      matchManagers: ["dockerfile"],
+      pinDigests: true,
+    },
+    {
+      matchManagers: ["gomod"],
+      semanticCommitType: "chore",
+    },
+    {
+      matchManagers: ["gomod"],
+      matchDepTypes: ["require", "indirect"],
+      matchUpdateTypes: ["minor", "patch", "digest"],
+      groupName: "go modules (minor and patch)",
+    },
+    {
+      // The go directive is the Go CI builds with (setup-go reads go.mod). Renovate leaves it
+      // alone unless told to bump it.
+      matchManagers: ["gomod"],
+      matchDepNames: ["go"],
+      matchDepTypes: ["golang"],
+      rangeStrategy: "bump",
+      semanticCommitType: "fix",
+    },
+    {
+      // CI's Go (the go directive) and the image's Go move together.
+      matchDepNames: ["go", "golang"],
+      groupName: "go",
+    },
+    {
+      // CI's Node and the image's Node move together.
+      matchDepNames: ["node"],
+      groupName: "node",
+    },
+    {
+      matchFileNames: [".github/workflows/**"],
+      semanticCommitScope: "ci",
+    },
+  ],
+
+  customManagers: [
+    {
+      // go-bindata, installed with `go install` in CI, Dockerfile.ci and Taskfile.yaml.
+      customType: "regex",
+      managerFilePatterns: [
+        "/^\\.github/workflows/ci\\.yaml$/",
+        "/^Dockerfile\\.ci$/",
+        "/^Taskfile\\.yaml$/",
+      ],
+      matchStrings: [
+        "go install (?<depName>github\\.com/go-bindata/go-bindata/v3)/go-bindata@(?<currentValue>v[0-9.]+)",
+      ],
+      datasourceTemplate: "go",
+    },
+  ],
+}
