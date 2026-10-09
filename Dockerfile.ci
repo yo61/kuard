@@ -27,7 +27,7 @@ COPY sitedata/ ./sitedata/
 RUN cd client && npm ci --loglevel=error && npm run build
 
 # ---- Stage 2: embed assets + cross-compile kuard for the target arch (runs on $BUILDPLATFORM) ----
-FROM --platform=$BUILDPLATFORM golang:1.26-alpine AS build
+FROM --platform=$BUILDPLATFORM golang:1.27-alpine@sha256:738d1cf061836894ff6bb8c33881080ac66de8cf0586615012a0c8f592649cfa AS build
 # TARGET* are supplied by buildx per requested platform; GOARM comes from the arm variant (v7 -> 7).
 ARG TARGETOS TARGETARCH TARGETVARIANT
 ENV CGO_ENABLED=0 \
