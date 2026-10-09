@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1
+# syntax=docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
 #
 # Self-contained multi-arch CI build for ghcr.io/yo61/kuard, and the only Dockerfile in the repo:
 # the upstream Makefile and the four Dockerfiles it drove targeted the dead gcr.io/kuar-demo via
@@ -50,7 +50,7 @@ RUN --mount=type=cache,target=/go/pkg/mod \
 # Pinned rather than bare `alpine`: this is the base of the published
 # ghcr.io/yo61/kuard image, and an unpinned tag both drifts silently between
 # builds and gives Renovate no version to bump.
-FROM alpine:3.24
+FROM alpine:3.24@sha256:294b683cb724975bec92580e1e685676bd4b50bda910ddb8c51d4cabeaec77e6
 USER nobody:nobody
 COPY --from=build /kuard /kuard
 CMD ["/kuard"]
