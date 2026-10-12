@@ -1,0 +1,3 @@
+[tools]
+# Used by `task lint:workflows`. Exact, so Renovate's mise manager proposes each release as a PR.
+actionlint = "1.7.12"
