@@ -78,9 +78,9 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      # `npm ci` also fails when package.json and package-lock.json disagree, which the
-      # `npm install` in Dockerfile.ci would silently paper over -- the usual damage from
-      # hand-resolving a Dependabot lockfile conflict.
+      # `npm ci` also fails when package.json and package-lock.json disagree -- the usual damage
+      # from hand-resolving a Dependabot lockfile conflict. Dockerfile.ci runs `npm ci` too, but
+      # this reports it as its own failed step rather than inside the image build's log.
       - name: npm ci
         run: |
           set -euo pipefail

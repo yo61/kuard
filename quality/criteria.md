@@ -67,7 +67,9 @@ a candidate for pruning.
     - Before closing a bot PR as superseded, main's `go.mod` (or lockfile) meets every version
       in that PR's diff, not just the module in its title.
     - After the queue is worked, `gh pr list -R yo61/kuard` shows no bot PR left open
-      without a stated reason, and the `build-kuard` run for main's head has succeeded.
+      without a stated reason, and the `build-kuard` run for the newest commit on main that
+      changed something other than `**.md` has succeeded. `build-kuard.yaml` ignores
+      markdown-only pushes, so a docs commit at main's head has no run.
 
 ## Severity: blocking
 
