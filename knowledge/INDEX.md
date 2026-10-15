@@ -12,6 +12,8 @@ that span repositories live in
   it has no tests, why digest-only image updates skip the release-age gate, and which actionlint
   kuard runs. The jactionlint playbook, with kuard's findings and fixes, is
   [yo61/github-repos `docs/jactionlint-migration.md`](https://github.com/yo61/github-repos/blob/main/docs/jactionlint-migration.md).
+- [ci](ci/knowledge.md) — why `ci.yaml` skips its required jobs on Markdown-only PRs instead of
+  path-filtering the workflow, and why their `if:` starts with `!cancelled()`.
 
 ## Decisions
 
