@@ -16,7 +16,7 @@ a candidate for pruning.
     - A change that touches `pkg/dnsapi` or bumps `github.com/miekg/dns` is checked by running
       the binary and making a `/dns/api` lookup, because the package has no tests.
     - The `go` directive in `go.mod` and the `golang:` tag in `Dockerfile.ci` name the same
-      minor version.
+      exact version (`go 1.27.2` and `golang:1.27.2-alpine`).
 
 ## Severity: blocking
 
@@ -51,12 +51,16 @@ a candidate for pruning.
       Renovate or Dependabot. Check it against `enabledManagers` and `customManagers` in
       `renovate.json5` and against `.github/dependabot.yaml`.
     - Base images in `Dockerfile.ci` are pinned by digest.
+    - The `node:` tag in `Dockerfile.ci` names the exact version in `ci.yaml`'s `NODE_VERSION`
+      (`node:24.21.0-alpine` and `24.21.0`). A floating tag like `node:24-alpine` fails this:
+      its digest updates change the Node version without saying so.
 
 ## Severity: blocking
 
-## Source: #38 (give every pin exactly one owner); `renovate.json5` `pinDigests` rule.
+## Source: #38 (give every pin exactly one owner); `renovate.json5` `pinDigests` rule;
+#57 (`node:24-alpine` moved to Node 24.22.0 while CI stayed on 24.21.0).
 
-## Last triggered: never
+## Last triggered: 2026-10-15 (node tag criterion, #57)
 
 ---
 
