@@ -159,7 +159,7 @@ tasks:
     desc: Lint and security-audit the GitHub Actions workflows
     summary: >-
       Runs actionlint over the workflow files, then zizmor for the security audit. The prek
-      hooks in prek.toml run both on commit, but neither ci.yaml nor build-kuard.yaml invokes
+      hooks in .pre-commit-config.yaml run both on commit, but neither ci.yaml nor build-kuard.yaml invokes
       either tool, so a commit made without the hooks installed goes unchecked until the
       workflow next runs.
     cmds:

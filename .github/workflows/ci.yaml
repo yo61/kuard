@@ -23,6 +23,23 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  hooks:
+    name: prek hooks
+    runs-on: ubuntu-26.04
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+        with:
+          persist-credentials: false
+
+      # Installs prek, actionlint and zizmor at the versions mise.toml pins.
+      - uses: jdx/mise-action@08ae2a091c038e1e05ec6f5115dc5c69d5a2a6b8  # v5.1.2
+
+      # gofmt is skipped: the go job checks it with the Go version go.mod names.
+      - name: prek run
+        env:
+          SKIP: gofmt
+        run: prek run --all-files --show-diff-on-failure
+
   go:
     name: go tests
     runs-on: ubuntu-26.04
