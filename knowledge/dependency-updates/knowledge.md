@@ -85,4 +85,5 @@ manager updates it from GitHub releases). This departs from the yo61-wide choice
 `kjanat/actionlint`; see `../../decisions/2026-10-15-jactionlint.md`. Its config is
 `.github/jactionlint.yaml`; jactionlint also reads `actionlint.yaml`, and one without a `profile`
 runs the stricter `default` profile. `jactionlint --init-config` writes the config file into
-`.github/` even when `-c` names another file.
+`.github/` even when `-c` names another file. kuard runs the `default` profile; how to migrate
+another repository, and the fixes its findings needed, are in `../../docs/jactionlint-migration.md`.
