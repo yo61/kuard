@@ -158,10 +158,10 @@ tasks:
   lint:workflows:
     desc: Lint and security-audit the GitHub Actions workflows
     summary: >-
-      Runs actionlint over the workflow files, then zizmor for the security audit. Nothing else
-      runs these: neither ci.yaml nor build-kuard.yaml invokes either tool, and this repo has no
-      pre-commit config — so a workflow mistake goes uncaught until the workflow next runs.
-      Worth running by hand after touching anything under .github/workflows.
+      Runs actionlint over the workflow files, then zizmor for the security audit. The prek
+      hooks in prek.toml run both on commit, but neither ci.yaml nor build-kuard.yaml invokes
+      either tool, so a commit made without the hooks installed goes unchecked until the
+      workflow next runs.
     cmds:
       - actionlint .github/workflows/*.y*ml
       - zizmor .github/workflows/
