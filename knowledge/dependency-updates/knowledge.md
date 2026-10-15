@@ -63,3 +63,17 @@ needs it again. Until then, pass `-R yo61/kuard`.
 - CI's `go tests` job reads the Go version from `go.mod` (`go-version-file`), so the `go`
   directive and `Dockerfile.ci`'s `golang:` tag must move together. Renovate's `go` group
   enforces this; a hand-made PR has to do it itself.
+
+## Digest-only updates skip the release-age gate
+
+A Docker digest update evidently carries no release timestamp, and `minimumReleaseAgeBehaviour:
+"timestamp-optional"` lets it through. On a floating tag like `node:24-alpine` that let #57 ship
+Node 24.22.0 one day after release, unpaired with CI's `NODE_VERSION`. Base images that have a
+matching pin elsewhere use exact tags (`node:24.21.0-alpine@…`, `golang:1.27.2-alpine@…`) so a
+new release is a version update. See `../../decisions/2026-10-15-exact-base-image-tags.md`.
+To see which version a floating tag resolves to:
+
+```bash
+docker buildx imagetools inspect node:24-alpine \
+  --format '{{json (index .Image "linux/amd64").Config.Env}}'
+```
