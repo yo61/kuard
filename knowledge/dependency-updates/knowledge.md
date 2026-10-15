@@ -77,3 +77,12 @@ To see which version a floating tag resolves to:
 docker buildx imagetools inspect node:24-alpine \
   --format '{{json (index .Image "linux/amd64").Config.Env}}'
 ```
+
+## Workflows are linted by jactionlint, not actionlint
+
+kuard uses `jdx/jactionlint`, pinned in `mise.toml` as `"github:jdx/jactionlint"` (Renovate's mise
+manager updates it from GitHub releases). This departs from the yo61-wide choice of
+`kjanat/actionlint`; see `../../decisions/2026-10-15-jactionlint.md`. Its config is
+`.github/jactionlint.yaml`; jactionlint also reads `actionlint.yaml`, and one without a `profile`
+runs the stricter `default` profile. `jactionlint --init-config` writes the config file into
+`.github/` even when `-c` names another file.

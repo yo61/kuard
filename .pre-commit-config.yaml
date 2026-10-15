@@ -21,11 +21,11 @@ repos:
         entry: gofmt -w
         language: system
         types: [go]
-      - id: actionlint
-        name: actionlint
-        entry: actionlint
+      - id: jactionlint
+        name: jactionlint
+        entry: jactionlint
         language: system
-        files: ^\.github/workflows/.*\.ya?ml$
+        files: ^\.github/(workflows/.*|dependabot)\.ya?ml$
       - id: zizmor
         name: zizmor
         entry: zizmor .github/workflows/

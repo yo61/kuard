@@ -1,5 +1,0 @@
-# actionlint 1.7.12 (the latest release) predates the ubuntu-26.04 runner and rejects the label.
-# Declaring it here stops that false positive; delete this file once a release knows the label.
-self-hosted-runner:
-  labels:
-    - ubuntu-26.04
