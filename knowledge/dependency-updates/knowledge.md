@@ -82,10 +82,10 @@ docker buildx imagetools inspect node:24-alpine \
 
 kuard uses `jdx/jactionlint`, pinned in `mise.toml` as `"github:jdx/jactionlint"` (Renovate's mise
 manager updates it from GitHub releases). kuard moved first, from `rhysd/actionlint`; see
-`../../decisions/2026-10-15-jactionlint.md`, and yo61/github-repos'
+`../../decisions/2026-10-15-jactionlint.md`, and yo61/global's
 `decisions/2026-10-15-jactionlint-org-wide.md` for the other repositories. Its config is
 `.github/jactionlint.yaml`; jactionlint also reads `actionlint.yaml`, and one without a `profile`
 runs the stricter `default` profile. `jactionlint --init-config` writes the config file into
 `.github/` even when `-c` names another file. kuard runs the `default` profile; how to migrate
-another repository, and the fixes kuard's findings needed, are in yo61/github-repos'
+another repository, and the fixes kuard's findings needed, are in yo61/global's
 `docs/jactionlint-migration.md`.

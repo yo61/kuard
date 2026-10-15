@@ -3,7 +3,7 @@
 Routes to domain knowledge folders. Each domain holds `knowledge.md` (facts and patterns) and,
 once a hypothesis is confirmed three or more times, `rules.md` (apply by default). Hypotheses
 that span repositories live in
-[yo61/github-repos `knowledge/`](https://github.com/yo61/github-repos/blob/main/knowledge/INDEX.md).
+[yo61/global `knowledge/`](https://github.com/yo61/global/blob/main/knowledge/INDEX.md).
 
 - [dependency-updates](dependency-updates/knowledge.md) — working through the Renovate and
   Dependabot queue: which bot owns which pin, why Renovate's per-module security PRs overlap so
@@ -11,7 +11,7 @@ that span repositories live in
   hand or by keyword in this squash-only repo, and the smoke test `pkg/dnsapi` needs because
   it has no tests, why digest-only image updates skip the release-age gate, and which actionlint
   kuard runs. The jactionlint playbook, with kuard's findings and fixes, is
-  [yo61/github-repos `docs/jactionlint-migration.md`](https://github.com/yo61/github-repos/blob/main/docs/jactionlint-migration.md).
+  [yo61/global `docs/jactionlint-migration.md`](https://github.com/yo61/global/blob/main/docs/jactionlint-migration.md).
 - [ci](ci/knowledge.md) — why `ci.yaml` skips its required jobs on Markdown-only PRs instead of
   path-filtering the workflow, and why their `if:` starts with `!cancelled()`.
 
@@ -27,7 +27,7 @@ Cross-cutting decisions live in [`../decisions/`](../decisions/).
 - `2026-10-15-prek-hooks-without-pins.md` — hooks live in `.pre-commit-config.yaml`, run by prek
   locally and in CI, with tool versions pinned once in `mise.toml`.
 - `2026-10-15-jactionlint.md` — kuard lints workflows with `jdx/jactionlint`, the first repository
-  to do so; yo61/github-repos' `decisions/2026-10-15-jactionlint-org-wide.md` extends it to the
+  to do so; yo61/global's `decisions/2026-10-15-jactionlint-org-wide.md` extends it to the
   other repositories.
 
 ## Quality gate
