@@ -1,0 +1,4 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/jdx/jactionlint/main/schema/jactionlint-config.json
+# What actionlint checks. The default profile's security and policy rules flag build-kuard.yaml
+# and every job's missing timeout; moving to it comes with those fixes.
+profile: correctness

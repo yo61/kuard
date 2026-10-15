@@ -3,11 +3,17 @@
 
   // Two bots update this repository, each owning different pins. Dependabot keeps npm and the
   // action SHAs (.github/dependabot.yaml). Renovate owns go.mod whole, Dockerfile.ci's base
-  // images, the runner image, CI's Node version, go-bindata and mise.toml. enabledManagers keeps
-  // it off everything Dependabot owns; github-actions runs only for runner images. Renovate runs
-  // from yo61/infrastructure's workflow, whose cron is the only schedule; do not add a `schedule`.
+  // images, the runner image, CI's Node version, go-bindata, mise.toml and the pre-commit-hooks
+  // rev. enabledManagers keeps it off everything Dependabot owns; github-actions runs only for
+  // runner images. Renovate runs from yo61/infrastructure's workflow, whose cron is the only
+  // schedule; do not add a `schedule`.
   extends: ["config:recommended", "customManagers:githubActionsVersions"],
-  enabledManagers: ["gomod", "dockerfile", "github-actions", "mise", "custom.regex"],
+  enabledManagers: ["gomod", "dockerfile", "github-actions", "mise", "pre-commit", "custom.regex"],
+
+  // Off by default in Renovate; .pre-commit-config.yaml's remote rev is its only pin.
+  "pre-commit": {
+    enabled: true,
+  },
 
   // Policy shared by every repository Renovate updates; keep the copies alike.
   semanticCommits: "enabled",

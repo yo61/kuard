@@ -1,7 +1,7 @@
 # Dependabot keeps npm and the action SHAs. Renovate (renovate.json5) keeps go.mod, whole,
-# Dockerfile.ci's base images, the runner image, mise.toml and the tool versions CI installs, so
-# that each pair that must move together has one owner: the go directive with the golang image,
-# CI's Node with the node image. Each pin has one owner.
+# Dockerfile.ci's base images, the runner image, mise.toml, the pre-commit-hooks rev and the tool
+# versions CI installs, so that each pair that must move together has one owner: the go directive
+# with the golang image, CI's Node with the node image. Each pin has one owner.
 
 version: 2
 updates:
