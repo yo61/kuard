@@ -12,13 +12,20 @@ on:
       - '**.md'
   workflow_dispatch: {}          # run on demand from the Actions tab
 
-permissions:
-  contents: read
-  packages: write                # push to ghcr.io/yo61/*
+permissions: {}
+
+# A newer push waits for the running publish rather than cancelling it mid-push.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   build:
     runs-on: ubuntu-26.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      packages: write            # push to ghcr.io/yo61/*
     strategy:
       fail-fast: false
       matrix:
@@ -29,6 +36,8 @@ jobs:
           persist-credentials: false
 
       - uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c  # v4.2.0
+        with:
+          cache-binary: false    # no cached buildx binary in a job that publishes
 
       - name: Log in to GHCR
         uses: docker/login-action@af1e73f918a031802d376d3c8bbc3fe56130a9b0  # v4.4.0
@@ -47,5 +56,6 @@ jobs:
           build-args: |
             FAKEVER=${{ matrix.fakever }}
           tags: ghcr.io/yo61/kuard:${{ matrix.fakever }}
-          cache-from: type=gha
+          # Write-only: a published image never restores a cache entry (cache poisoning). The
+          # entry is still written for ci.yaml's PR builds, which read it.
           cache-to: type=gha,mode=max

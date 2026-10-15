@@ -14,3 +14,19 @@ so closing it would lose a fix.
 Confirmations:
 
 - 2026-10-12 — #45 (x/net) superseded #43, #44 and #46.
+
+## Swap a linter on its compatible profile first, tighten in a second PR
+
+Moving a repository to a stricter linter goes cleanly in two pull requests: the first swaps the
+tool on the profile that matches the old one (jactionlint's `correctness`), with no workflow
+changes; the second turns on the stricter profile and fixes its findings. Each PR stays
+reviewable, and the second can change how the repository builds or publishes without being
+hidden in a tooling change. Playbook: `../../docs/jactionlint-migration.md`.
+
+What would disprove it: a repository where the compatible profile still fails on day one (for
+example, an `actionlint.yaml` without `profile` silently selecting `default`), or where the
+second PR's findings were trivial enough that splitting only added overhead.
+
+Confirmations:
+
+- 2026-10-15 — kuard: #60 (swap) and the follow-up (default profile, 8 findings).
