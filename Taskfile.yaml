@@ -158,12 +158,13 @@ tasks:
   lint:workflows:
     desc: Lint and security-audit the GitHub Actions workflows
     summary: >-
-      Runs jactionlint over the workflows and dependabot.yaml, then zizmor for the security
-      audit. The hooks in .pre-commit-config.yaml run both on commit, and ci.yaml's prek hooks
-      job runs them on every pull request; this task is for running them by hand.
+      Runs jactionlint over the workflows and dependabot.yaml. Its default profile is the
+      security audit since zizmor was retired org-wide (yo61/global
+      decisions/2026-10-17-retire-zizmor.md, which compares the two rule sets). The hook in
+      .pre-commit-config.yaml runs it on commit, and ci.yaml's prek hooks job runs it on every
+      pull request with the online rules on; this task is for running it by hand.
     cmds:
       - jactionlint
-      - zizmor .github/workflows/
 
   build:
     desc: Build the kuard binary into bin/
