@@ -2,4 +2,4 @@
 # Exact, so Renovate's mise manager opens a PR per release. jactionlint runs from
 # `task lint:workflows` and from the hook in .pre-commit-config.yaml.
 "github:jdx/jactionlint" = "2.2.0"
-prek = "0.5.5"
+prek = "0.5.6"
