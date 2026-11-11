@@ -87,8 +87,8 @@ datasource) got no 26 PR until #99 (2026-11-11), 14 days after 26.13.0, the firs
 In between, #91 moved CI within 24 to 24.22.2, so main built the image on 26 and tested on 24
 for two weeks. Hypothesis, unconfirmed: the `node-version` datasource offers only LTS majors,
 the docker datasource offers any major, and the docker tag carried no timestamp for the gate.
-Until that is settled, check any `node` PR touching only one of the two files against the other
-pin before merging it.
+The `node-pins` prek hook (`scripts/check-node-pins.sh`) now fails a PR that leaves the two
+pins apart, in CI's `prek hooks` job, so a split update has to be paired by hand before merge.
 
 ## Workflows are linted by jactionlint, not actionlint
 
