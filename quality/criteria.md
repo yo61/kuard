@@ -54,7 +54,7 @@ a candidate for pruning.
     - The `node:` tag in `Dockerfile.ci` names the exact version in `ci.yaml`'s `NODE_VERSION`
       (`node:24.21.0-alpine` and `24.21.0`). A floating tag like `node:24-alpine` fails this:
       its digest updates change the Node version without saying so. ALWAYS CHECK: the
-      `node-pins` prek hook (`scripts/check-node-pins.sh`) runs it, locally and in CI.
+      `pins-agree` prek hook (`.pins-agree.toml`'s `node` group) runs it, locally and in CI.
 
 ## Severity: blocking
 
