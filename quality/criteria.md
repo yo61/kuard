@@ -60,7 +60,7 @@ a candidate for pruning.
 ## Source: #38 (give every pin exactly one owner); `renovate.json5` `pinDigests` rule;
 #57 (`node:24-alpine` moved to Node 24.22.0 while CI stayed on 24.21.0).
 
-## Last triggered: 2026-10-15 (node tag criterion, #57)
+## Last triggered: 2026-11-11 (node tag criterion, #85: image on 26.12.1, CI on 24)
 
 ---
 

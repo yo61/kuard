@@ -66,7 +66,7 @@ settings after the first push (Packages → kuard → Package settings → Chang
 The source layout, the app's behaviour and its licensing are unchanged from upstream. The dependencies are
 not: upstream's 2019 stack no longer builds or installs cleanly, so it has been brought forward.
 
-- **Client build**: webpack 4 → 5, webpack-dev-server 3 → 6, Babel 7 → 8, on node 24. This removed the
+- **Client build**: webpack 4 → 5, webpack-dev-server 3 → 6, Babel 7 → 8, on node 26. This removed the
   `NODE_OPTIONS=--openssl-legacy-provider` workaround webpack 4 needed under OpenSSL 3.
 - **Client app**: React 15 → 19. `react-router-component` (abandoned) → `react-router-dom`,
   `react-jsonschema-form` (deprecated) → `@rjsf/core`, and `marked` 0.3 → 18.
