@@ -1,0 +1,12 @@
+# Pins that must name one version, checked by the pins-agree hook (yo61/precommit-hooks).
+
+[[group]]
+name = "node"
+
+[[group.pin]]
+file = "Dockerfile.ci"
+pattern = '^FROM\s+(?:.*\s)?node:(?P<version>[^-@\s]+)'
+
+[[group.pin]]
+file = ".github/workflows/ci.yaml"
+pattern = '^\s+NODE_VERSION:\s+"?(?P<version>[^"\s#]+)'

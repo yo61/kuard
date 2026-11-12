@@ -1,5 +1,5 @@
 # Read by both prek and pre-commit. prek runs pre-commit-hooks through its Rust fast path.
-# Renovate's pre-commit manager owns the rev; the local hooks run the tools mise.toml pins.
+# Renovate's pre-commit manager owns the revs; the local hooks run the tools mise.toml pins.
 
 # Vendored Bootstrap assets, kept byte-for-byte as upstream ships them.
 exclude: ^sitedata/static/(fonts/|.*\.min\.)
@@ -14,6 +14,11 @@ repos:
       - id: check-merge-conflict
       - id: check-added-large-files
 
+  - repo: https://github.com/yo61/precommit-hooks
+    rev: v0.1.0
+    hooks:
+      - id: pins-agree
+
   - repo: local
     hooks:
       - id: gofmt
@@ -26,15 +31,3 @@ repos:
         entry: jactionlint
         language: system
         files: ^\.github/(workflows/.*|dependabot)\.ya?ml$
-      - id: node-pins
-        name: node pins agree
-        entry: scripts/check-node-pins.sh
-        language: system
-        files: ^(Dockerfile\.ci|\.github/workflows/ci\.yaml|scripts/check-node-pins\.sh)$
-        pass_filenames: false
-      - id: node-pins-test
-        name: node pins check tests
-        entry: scripts/check-node-pins_test.sh
-        language: system
-        files: ^scripts/check-node-pins(_test)?\.sh$
-        pass_filenames: false
