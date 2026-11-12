@@ -53,14 +53,15 @@ a candidate for pruning.
     - Base images in `Dockerfile.ci` are pinned by digest.
     - The `node:` tag in `Dockerfile.ci` names the exact version in `ci.yaml`'s `NODE_VERSION`
       (`node:24.21.0-alpine` and `24.21.0`). A floating tag like `node:24-alpine` fails this:
-      its digest updates change the Node version without saying so.
+      its digest updates change the Node version without saying so. ALWAYS CHECK: the
+      `node-pins` prek hook (`scripts/check-node-pins.sh`) runs it, locally and in CI.
 
 ## Severity: blocking
 
 ## Source: #38 (give every pin exactly one owner); `renovate.json5` `pinDigests` rule;
 #57 (`node:24-alpine` moved to Node 24.22.0 while CI stayed on 24.21.0).
 
-## Last triggered: 2026-10-15 (node tag criterion, #57)
+## Last triggered: 2026-11-11 (node tag criterion, #85: image on 26.12.1, CI on 24)
 
 ---
 

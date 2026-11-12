@@ -78,6 +78,18 @@ docker buildx imagetools inspect node:24-alpine \
   --format '{{json (index .Image "linux/amd64").Config.Env}}'
 ```
 
+## The `node` group does not keep a major together
+
+Exact tags did not stop the drift on a major. #85 (2026-10-28) moved `Dockerfile.ci` from
+`node:24.22.1-alpine` to `node:26.12.1-alpine` on its own. 26.12.1 was then 7 days old, short
+of the 14-day major gate, and 26 was not yet LTS. CI's `NODE_VERSION` (`node-version`
+datasource) got no 26 PR until #99 (2026-11-11), 14 days after 26.13.0, the first LTS release.
+In between, #91 moved CI within 24 to 24.22.2, so main built the image on 26 and tested on 24
+for two weeks. Hypothesis, unconfirmed: the `node-version` datasource offers only LTS majors,
+the docker datasource offers any major, and the docker tag carried no timestamp for the gate.
+The `node-pins` prek hook (`scripts/check-node-pins.sh`) now fails a PR that leaves the two
+pins apart, in CI's `prek hooks` job, so a split update has to be paired by hand before merge.
+
 ## Workflows are linted by jactionlint, not actionlint
 
 kuard uses `jdx/jactionlint`, pinned in `mise.toml` as `"github:jdx/jactionlint"` (Renovate's mise
