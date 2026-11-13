@@ -9,7 +9,7 @@ require (
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/miekg/dns v1.1.73
 	github.com/prometheus/client_golang v1.25.0
-	github.com/spf13/pflag v1.0.10
+	github.com/spf13/pflag v1.1.0
 	github.com/spf13/viper v1.21.0
 	golang.org/x/crypto v0.59.0
 )
