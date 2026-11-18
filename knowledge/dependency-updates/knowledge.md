@@ -62,7 +62,9 @@ needs it again. Until then, pass `-R yo61/kuard`.
   A good response has `status: NOERROR` and an ANSWER section.
 - CI's `go tests` job reads the Go version from `go.mod` (`go-version-file`), so the `go`
   directive and `Dockerfile.ci`'s `golang:` tag must move together. Renovate's `go` group
-  enforces this; a hand-made PR has to do it itself.
+  does not keep them together: #78 (2026-10-26) moved the directive to 1.27.3 alone, and #97
+  (2026-11-11) moved the image to 1.27.4 alone, so main built on 1.27.4 and tested on 1.27.3
+  until #108. `.pins-agree.toml`'s `go` group now fails a PR that leaves them apart.
 
 ## Digest-only updates skip the release-age gate
 

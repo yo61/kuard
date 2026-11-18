@@ -10,3 +10,14 @@ pattern = '^FROM\s+(?:.*\s)?node:(?P<version>[^-@\s]+)'
 [[group.pin]]
 file = ".github/workflows/ci.yaml"
 pattern = '^\s+NODE_VERSION:\s+"?(?P<version>[^"\s#]+)'
+
+[[group]]
+name = "go"
+
+[[group.pin]]
+file = "Dockerfile.ci"
+pattern = '^FROM\s+(?:.*\s)?golang:(?P<version>[^-@\s]+)'
+
+[[group.pin]]
+file = "go.mod"
+pattern = '^go\s+(?P<version>\S+)'
