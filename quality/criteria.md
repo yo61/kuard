@@ -16,14 +16,15 @@ a candidate for pruning.
     - A change that touches `pkg/dnsapi` or bumps `github.com/miekg/dns` is checked by running
       the binary and making a `/dns/api` lookup, because the package has no tests.
     - The `go` directive in `go.mod` and the `golang:` tag in `Dockerfile.ci` name the same
-      exact version (`go 1.27.2` and `golang:1.27.2-alpine`).
+      exact version (`go 1.27.4` and `golang:1.27.4-alpine`). ALWAYS CHECK: the `pins-agree`
+      prek hook (`.pins-agree.toml`'s `go` group) runs it, locally and in CI.
 
 ## Severity: blocking
 
 ## Source: `.github/workflows/ci.yaml` (`go tests` job); 2026-10-12 Go 1.27 / miekg/dns
-1.1.73 update (#52).
+1.1.73 update (#52); #97 (`golang:1.27.4` while `go.mod` stayed on 1.27.3).
 
-## Last triggered: never
+## Last triggered: 2026-11-18 (go pins criterion, #97/#108: image on 1.27.4, CI on 1.27.3)
 
 ---
 
